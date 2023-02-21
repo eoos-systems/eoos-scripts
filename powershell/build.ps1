@@ -22,8 +22,8 @@ param(
 
 Import-Module -Name .\functions.psm1
 
-[string]$pathScriptToBuildDir = ".\..\build"
-[string]$pathBuildToScriptDir = ".\..\scripts"
+[string]$pathScriptToBuildDir = ".\..\..\build"
+[string]$pathBuildToScriptDir = ".\..\scripts\powershell"
 
 <## 
  # @brief Outs a message.
