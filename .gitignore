@@ -1,0 +1,37 @@
+# Common files
+build
+__pycache__
+
+# Compiled Object files
+*.o
+*.obj
+*.lst
+*.map
+
+# VSCode project files
+.vscode
+
+# CCStudio project files
+*.paf2
+*.sbl
+*.log
+*.lkf
+*.CS_
+Debug
+Release
+
+# Eclipse project files
+.cproject
+.project
+.settings/
+*.launch
+
+# Keil project files
+*.lnp
+*.m51
+*.plg
+*.uvopt
+*.localadmin
+*.bak
+*.iex
+*.__i
