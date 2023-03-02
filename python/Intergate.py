@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+# @file      Intergate.py
+# @author    Sergey Baigudin, sergey@baigudin.software
+# @copyright 2023, Sergey Baigudin, Baigudin Software
+
+import sys
+from intergate.Program import Program
+
+
+def main():
+    try:
+        program = Program()
+        return program.execute()
+    except BaseException:
+        print(e);
+        return -1;
+
+
+if __name__ == "__main__":
+    sys.exit( main() )
