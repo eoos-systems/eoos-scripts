@@ -32,7 +32,7 @@ class Program():
             self.__do_run_eoos_sample_applications('RelWithDebInfo')
         except Exception as e:
             Message.out(f'[EXCEPTION] {e}', Message.ERR)        
-            error = 1;
+            error = 1
         finally:
             self.__do_clean()
             status = Message.OK

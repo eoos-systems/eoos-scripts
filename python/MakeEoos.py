@@ -11,9 +11,9 @@ def main():
     try:
         program = Program()
         return program.execute()
-    except BaseException:
-        print(e);    
-        return -1;
+    except BaseException as e:
+        print(e)    
+        return 1
 
 
 if __name__ == "__main__":

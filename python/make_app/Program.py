@@ -33,7 +33,7 @@ class Program():
             self.__do_run_app_hello_world()
         except Exception as e:
             Message.out(f'[EXCEPTION] {e}', Message.ERR)        
-            error = 1;
+            error = 1
         finally:
             status = Message.OK
             not_word = ''
