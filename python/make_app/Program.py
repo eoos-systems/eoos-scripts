@@ -134,7 +134,7 @@ class Program():
         if Os.is_posix():
             return f'./codebase/app-hello-world'
         elif Os.is_win32():
-            return './codebase/app-hello-world/{self.__args.config}'
+            return f'./codebase/app-hello-world/{self.__args.config}'
         else:
             raise Exception(f'Unknown OS to build')
 
