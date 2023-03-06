@@ -49,7 +49,7 @@ class Program():
         if self.__args.build != 'EOOS' and self.__args.build != 'ALL':
             return
         Message.out(f'Run EOOS Unit Tests for "{config}" configuration', Message.INF, True)
-        ret = subprocess.run(f'{self.__args.interpreter} MakeEoos.py -c -b ALL -r --config {config} -j 8').returncode
+        ret = subprocess.run([self.__args.interpreter, 'MakeEoos.py', '-c', '-b', 'ALL', '-r', '--config', config, '-j', '8']).returncode
         if ret != 0:
             raise Exception(f'EOOS build error with exit code [{ret}]')
 
@@ -58,7 +58,7 @@ class Program():
         if self.__args.no_install is True:
             return    
         Message.out(f'Install EOOS for "{config}" configuration', Message.INF, True)
-        ret = subprocess.run(f'{self.__args.interpreter} MakeEoos.py -c -b EOOS --install --config {config} -j 8').returncode
+        ret = subprocess.run([self.__args.interpreter, 'MakeEoos.py', '-c', '-b', 'EOOS', '--install', '--config', config, '-j', '8']).returncode
         if ret != 0:
             raise Exception(f'EOOS install error with exit code [{ret}]')
 
@@ -66,7 +66,7 @@ class Program():
         if self.__args.build != 'APPS' and self.__args.build != 'ALL':
             return    
         Message.out(f'Run EOOS Sample Applications for "{config}" configuration', Message.INF, True)
-        ret = subprocess.run(f'{self.__args.interpreter} MakeApp.py -c -b -r --config {config} -j 8').returncode
+        ret = subprocess.run([self.__args.interpreter, 'MakeApp.py', '-c', '-b', '-r', '--config', config, '-j', '8']).returncode
         if ret != 0:
             raise Exception(f'APP build error with exit code [{ret}]')
 

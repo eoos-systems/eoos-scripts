@@ -63,26 +63,30 @@ class Program():
     def __do_build(self):
         if self.__args.build is None:    
             return
-        args = ''
+            
+        args = ['cmake']
         if self.__args.build == 'ALL':
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
-            args = ' -DEOOS_ENABLE_TESTS=ON'
+            args.append('-DEOOS_ENABLE_TESTS=ON')
         elif self.__args.build == 'EOOS':
-            Message.out(f'[BUILD] Generating CMake project for EOOS target only...', Message.INF)
-            args = ''
+            pass
         else:
             raise Exception(f'Cannot process --build {self.__args.build} argument')
-        os.chdir(self.__PATH_TO_BUILD_DIR)            
-        ret = subprocess.run(f'cmake{args} ..').returncode
+        args.append('..')
+        os.chdir(self.__PATH_TO_BUILD_DIR)
+        ret = subprocess.run(args).returncode
         os.chdir(self.__PATH_TO_SCRIPT_DIR)        
         if ret != 0:
             raise Exception(f'CMake project is not generated with code [{ret}]')
+        
+        args.clear()
+        args = ['cmake', '--build', '.', '--config', self.__args.config]
         Message.out(f'[BUILD] Building CMake project...', Message.INF)
-        jobs = '';
         if self.__args.jobs is not None:
-            jobs = f' -j {self.__args.jobs}'
+            args.append('-j') 
+            args.append(str(self.__args.jobs))
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(f'cmake --build . --config {self.__args.config}{jobs}').returncode
+        ret = subprocess.run(args).returncode        
         os.chdir(self.__PATH_TO_SCRIPT_DIR)        
         if ret != 0:
             raise Exception(f'CMake project is not built with code [{ret}]')        
@@ -91,9 +95,10 @@ class Program():
     def __do_install(self):
         if self.__args.install is not True:
             return
+        args = ['cmake', '--install', '.', '--config', self.__args.config]
         Message.out(f'[BUILD] installing the library...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(f'cmake --install . --config {self.__args.config}').returncode
+        ret = subprocess.run(args).returncode
         os.chdir(self.__PATH_TO_SCRIPT_DIR)  
         if ret != 0:
             raise Exception(f'CMake project is not installed with code [{ret}]')        
@@ -103,9 +108,10 @@ class Program():
         if self.__args.run is not True:    
             return
         subpath = self.__get_run_platform_subpath()
+        args = ['EoosTests', '--gtest_shuffle']
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(f'./codebase/tests{subpath}')
-        ret = subprocess.run(f'EoosTests --gtest_shuffle').returncode
+        ret = subprocess.run(args).returncode
         os.chdir(f'./../../..')
         os.chdir(self.__PATH_TO_SCRIPT_DIR)
         if ret != 0:

@@ -64,16 +64,17 @@ class Program():
         if self.__args.build is not True:    
             return
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(f'cmake ..').returncode
+        ret = subprocess.run(['cmake', '..']).returncode
         os.chdir(self.__path_to_script_dir)        
         if ret != 0:
             raise Exception(f'CMake project is not generated with code [{ret}]')
         Message.out(f'[BUILD] Building CMake project...', Message.INF)
-        jobs = '';
+        args = ['cmake', '--build', '.', '--config', self.__args.config]
         if self.__args.jobs is not None:
-            jobs = f' -j {self.__args.jobs}'
+            args.append('-j') 
+            args.append(str(self.__args.jobs))        
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(f'cmake --build . --config {self.__args.config}{jobs}').returncode
+        ret = subprocess.run(args).returncode
         os.chdir(self.__path_to_script_dir)        
         if ret != 0:
             raise Exception(f'CMake project is not built with code [{ret}]')        
@@ -87,7 +88,7 @@ class Program():
         Message.out(f'[RUN] EoosAppHelloWorld with 0 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(f'EoosAppHelloWorld').returncode
+        ret = subprocess.run(['EoosAppHelloWorld']).returncode
         os.chdir(f'./../../..')
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
@@ -96,7 +97,7 @@ class Program():
         Message.out(f'[RUN] EoosAppHelloWorld with 1 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(f'EoosAppHelloWorld Think').returncode
+        ret = subprocess.run(['EoosAppHelloWorld', 'Think']).returncode
         os.chdir(f'./../../..')
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
@@ -105,7 +106,7 @@ class Program():
         Message.out(f'[RUN] EoosAppHelloWorld with 2 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(f'EoosAppHelloWorld Think Create').returncode
+        ret = subprocess.run(['EoosAppHelloWorld', 'Think', 'Create']).returncode
         os.chdir(f'./../../..')
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
@@ -114,7 +115,7 @@ class Program():
         Message.out(f'[RUN] EoosAppHelloWorld with 3 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(f'EoosAppHelloWorld Think Create Win').returncode
+        ret = subprocess.run(['EoosAppHelloWorld', 'Think', 'Create', 'Win']).returncode
         os.chdir(f'./../../..')
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
@@ -123,7 +124,7 @@ class Program():
         Message.out(f'[RUN] EoosAppHelloWorld with 4 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(f'EoosAppHelloWorld Think Create Win Destroy').returncode
+        ret = subprocess.run(['EoosAppHelloWorld', 'Think', 'Create', 'Win', 'Destroy']).returncode
         os.chdir(f'./../../..')
         os.chdir(self.__path_to_script_dir)
         if ret != 1:
