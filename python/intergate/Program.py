@@ -9,6 +9,7 @@ import argparse
 import shutil
 import subprocess
 from common.Message import Message
+from common.Os import Os
 
 class Program():
 
@@ -62,6 +63,7 @@ class Program():
         if ret != 0:
             raise Exception(f'EOOS install error with exit code [{ret}]')
 
+
     def __do_run_eoos_sample_applications(self, config):
         if self.__args.build != 'APPS' and self.__args.build != 'ALL':
             return    
@@ -69,6 +71,7 @@ class Program():
         ret = subprocess.run([self.__args.interpreter, 'MakeApp.py', '-c', '-b', '-r', '--config', config, '-j', '8']).returncode
         if ret != 0:
             raise Exception(f'APP build error with exit code [{ret}]')
+
 
     def __do_clean(self):
         if os.path.isdir(self.__PATH_TO_EOOS_BUILD_DIR):
@@ -95,6 +98,9 @@ class Program():
 
 
     def __parse_args(self):
+        pyVer = ''
+        if Os.is_posix():
+            pyVer = '3'
         parser = argparse.ArgumentParser(prog=self.__PROGRAM_NAME\
             , description='Runs the EOOS intergation build'\
             , epilog='(c) 2023, Sergey Baigudin, Baigudin Software' )
@@ -106,7 +112,7 @@ class Program():
             , action='store_true'\
             , help='do not install EOOS on OS')
         parser.add_argument('--interpreter'\
-            , default='python'\
+            , default=f'python{pyVer}'\
             , metavar='PYTHON_EXECUTABLE'\
             , help='set Python interpreter')
         parser.add_argument('--version'\

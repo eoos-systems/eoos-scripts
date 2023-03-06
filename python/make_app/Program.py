@@ -8,8 +8,8 @@ import time
 import argparse
 import shutil
 import subprocess
-from sys import platform
 from common.Message import Message
+from common.Os import Os
 
 class Program():
 
@@ -83,59 +83,76 @@ class Program():
     def __do_run_app_hello_world(self):
         if self.__args.run is not True:    
             return        
-        subpath = self.__get_run_platform_subpath()    
     
         Message.out(f'[RUN] EoosAppHelloWorld with 0 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(['EoosAppHelloWorld']).returncode
-        os.chdir(f'./../../..')
+        os.chdir(self.__get_run_ut_executable_path_to())
+        ret = subprocess.run([self.__get_run_executable()]).returncode
+        os.chdir(self.__get_run_ut_executable_path_back())
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
             raise Exception(f'UT execution error with exit code [{ret}]')
 
         Message.out(f'[RUN] EoosAppHelloWorld with 1 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(['EoosAppHelloWorld', 'Think']).returncode
-        os.chdir(f'./../../..')
+        os.chdir(self.__get_run_ut_executable_path_to())
+        ret = subprocess.run([self.__get_run_executable(), 'Think']).returncode
+        os.chdir(self.__get_run_ut_executable_path_back())
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
             raise Exception(f'UT execution error with exit code [{ret}]')            
         
         Message.out(f'[RUN] EoosAppHelloWorld with 2 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(['EoosAppHelloWorld', 'Think', 'Create']).returncode
-        os.chdir(f'./../../..')
+        os.chdir(self.__get_run_ut_executable_path_to())
+        ret = subprocess.run([self.__get_run_executable(), 'Think', 'Create']).returncode
+        os.chdir(self.__get_run_ut_executable_path_back())
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
             raise Exception(f'UT execution error with exit code [{ret}]')
 
         Message.out(f'[RUN] EoosAppHelloWorld with 3 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(['EoosAppHelloWorld', 'Think', 'Create', 'Win']).returncode
-        os.chdir(f'./../../..')
+        os.chdir(self.__get_run_ut_executable_path_to())
+        ret = subprocess.run([self.__get_run_executable(), 'Think', 'Create', 'Win']).returncode
+        os.chdir(self.__get_run_ut_executable_path_back())
         os.chdir(self.__path_to_script_dir)
         if ret != 0:
             raise Exception(f'UT execution error with exit code [{ret}]')
         
         Message.out(f'[RUN] EoosAppHelloWorld with 4 arg...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(f'./codebase/app-hello-world{subpath}')
-        ret = subprocess.run(['EoosAppHelloWorld', 'Think', 'Create', 'Win', 'Destroy']).returncode
-        os.chdir(f'./../../..')
+        os.chdir(self.__get_run_ut_executable_path_to())
+        ret = subprocess.run([self.__get_run_executable(), 'Think', 'Create', 'Win', 'Destroy']).returncode
+        os.chdir(self.__get_run_ut_executable_path_back())
         os.chdir(self.__path_to_script_dir)
         if ret != 1:
             raise Exception(f'UT execution error with exit code [{ret}]')
 
 
-    def __get_run_platform_subpath(self):
-        if platform == 'linux' or platform == 'linux2':
-            return f''
-        elif platform == 'win32':
-            return f'/{self.__args.config}'
+    def __get_run_ut_executable_path_to(self):
+        if Os.is_posix():
+            return f'./codebase/app-hello-world'
+        elif Os.is_win32():
+            return './codebase/app-hello-world/{self.__args.config}'
+        else:
+            raise Exception(f'Unknown OS to build')
+
+
+    def __get_run_ut_executable_path_back(self):
+        if Os.is_posix():
+            return f'./../..'
+        elif Os.is_win32():
+            return f'./../../..'
+        else:
+            raise Exception(f'Unknown OS to build')
+
+
+    def __get_run_executable(self):
+        if Os.is_posix():
+            return f'./EoosAppHelloWorld'
+        elif Os.is_win32():
+            return f'EoosAppHelloWorld.exe'
         else:
             raise Exception(f'Unknown OS to build')
 
@@ -145,9 +162,9 @@ class Program():
 
 
     def __set_platform_paths(self):
-        if platform == 'linux' or platform == 'linux2':
+        if Os.is_posix():
             self.__path_to_script_dir = "./../../eoos-if-posix/scripts/python"
-        elif platform == 'win32':
+        elif Os.is_win32():
             self.__path_to_script_dir = "./../../eoos-if-win32/scripts/python"
         else:
             raise Exception(f'Unknown OS to build')

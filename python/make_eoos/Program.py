@@ -8,8 +8,9 @@ import time
 import argparse
 import shutil
 import subprocess
-from sys import platform
+
 from common.Message import Message
+from common.Os import Os
 
 class Program():
 
@@ -96,6 +97,8 @@ class Program():
         if self.__args.install is not True:
             return
         args = ['cmake', '--install', '.', '--config', self.__args.config]
+        if Os.is_posix():
+            args.insert(0, 'sudo')
         Message.out(f'[BUILD] installing the library...', Message.INF)
         os.chdir(self.__PATH_TO_BUILD_DIR)
         ret = subprocess.run(args).returncode
@@ -107,22 +110,39 @@ class Program():
     def __do_run(self):
         if self.__args.run is not True:    
             return
-        subpath = self.__get_run_platform_subpath()
-        args = ['EoosTests', '--gtest_shuffle']
+        args = [self.__get_run_executable(), '--gtest_shuffle']
         os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(f'./codebase/tests{subpath}')
+        os.chdir(self.__get_run_ut_executable_path_to())
         ret = subprocess.run(args).returncode
-        os.chdir(f'./../../..')
+        os.chdir(self.__get_run_ut_executable_path_back())
         os.chdir(self.__PATH_TO_SCRIPT_DIR)
         if ret != 0:
             raise Exception(f'UT execution error with exit code [{ret}]')
 
 
-    def __get_run_platform_subpath(self):
-        if platform == 'linux' or platform == 'linux2':
-            return f''
-        elif platform == 'win32':
-            return f'/{self.__args.config}'
+    def __get_run_ut_executable_path_to(self):
+        if Os.is_posix():
+            return f'./codebase/tests'
+        elif Os.is_win32():
+            return f'./codebase/tests/{self.__args.config}'
+        else:
+            raise Exception(f'Unknown OS to build')
+
+
+    def __get_run_ut_executable_path_back(self):
+        if Os.is_posix():
+            return f'./../..'
+        elif Os.is_win32():
+            return f'./../../..'
+        else:
+            raise Exception(f'Unknown OS to build')
+
+
+    def __get_run_executable(self):
+        if Os.is_posix():
+            return f'./EoosTests'
+        elif Os.is_win32():
+            return f'EoosTests.exe'
         else:
             raise Exception(f'Unknown OS to build')
 
