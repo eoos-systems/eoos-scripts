@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# @file      Build.py
+# @file      Make.py
 # @author    Sergey Baigudin, sergey@baigudin.software
 # @copyright 2023, Sergey Baigudin, Baigudin Software
 
 import sys
-from build.Program import Program
+from make.Program import Program
 
 
 def main():
