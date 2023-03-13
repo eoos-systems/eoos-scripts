@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# @file      MakeEoos.py
+# @file      Build.py
 # @author    Sergey Baigudin, sergey@baigudin.software
 # @copyright 2023, Sergey Baigudin, Baigudin Software
 
 import sys
-from make_eoos.Program import Program
+from build.Program import Program
 
 
 def main():
