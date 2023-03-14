@@ -31,6 +31,7 @@ class Program():
             self.__do_build()
             self.__do_install()
             self.__do_run()
+            self.__do_coverage()
         except Exception as e:
             Message.out(f'[EXCEPTION] {e}', Message.ERR)        
             error = 1
@@ -108,7 +109,7 @@ class Program():
 
 
     def __do_run(self):
-        if self.__args.run is not True:    
+        if self.__args.run is not True:
             return
         args = [self.__get_run_executable(), '--gtest_shuffle']
         os.chdir(self.__PATH_TO_BUILD_DIR)
@@ -118,6 +119,27 @@ class Program():
         os.chdir(self.__PATH_TO_SCRIPT_DIR)
         if ret != 0:
             raise Exception(f'UT execution error with exit code [{ret}]')
+
+
+    def __do_coverage(self):
+        if self.__args.coverage is not True:
+            return
+        if Os.is_posix():
+            return
+        if Os.is_win32():
+            path = f'./build/{self.__get_run_ut_executable_path_to()}/{self.__get_run_executable()}'
+            args = ['OpenCppCoverage.exe'
+                , '--sources', 'codebase\interface'
+                , '--sources', 'codebase\library'
+                , '--sources', 'codebase\system'
+                , '--export_type', 'html:build\coverage'
+                , '--', path]
+            os.chdir(f'{self.__PATH_TO_BUILD_DIR}/..')                
+            ret = subprocess.run(args).returncode
+            os.chdir(f'./build/{self.__PATH_TO_SCRIPT_DIR}')
+            if ret != 0:
+                raise Exception(f'UT execution error with exit code [{ret}]')
+            return
 
 
     def __get_run_ut_executable_path_to(self):
@@ -175,6 +197,9 @@ class Program():
         parser.add_argument('-r', '--run'\
             , action='store_true'\
             , help='run unit tests')
+        parser.add_argument('--coverage'\
+            , action='store_true'\
+            , help='run unit tests and create code coverage report')    
         parser.add_argument('--install'\
             , action='store_true'\
             , help='install on OS')
@@ -198,6 +223,8 @@ class Program():
             Message.out(f'[INFO] Argument BUILD = {self.__args.build}', Message.INF)
         if self.__args.run is True:
             Message.out(f'[INFO] Argument RUN = {self.__args.run}', Message.INF)
+        if self.__args.coverage is True:
+            Message.out(f'[INFO] Argument COVERAGE = {self.__args.coverage}', Message.INF)
         if self.__args.install is True:
             Message.out(f'[INFO] Argument INSTALL = {self.__args.install}', Message.INF)
         if self.__args.config is not None:
@@ -206,6 +233,7 @@ class Program():
             Message.out(f'[INFO] Argument JOBS = {self.__args.jobs}', Message.INF)
         if self.__args.install is True:
             Message.out(f'[NOTE] To install EOOS on Windows, a console has to be run as Administrator.', Message.NOR)
+
 
     __PROGRAM_NAME = 'EOOS Automotive Project Builder'
     __PROGRAM_VERSION = '1.0.0'
