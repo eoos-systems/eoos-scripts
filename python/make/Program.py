@@ -115,6 +115,7 @@ class Program():
     def __do_run(self):
         if self.__args.run is not True:
             return
+        Message.out(f'[BUILD] Running unit tests...', Message.INF)
         args = [self.__get_run_executable(), '--gtest_shuffle']
         os.chdir(self.__PATH_TO_BUILD_DIR)
         os.chdir(self.__get_run_ut_executable_path_to())
@@ -128,6 +129,7 @@ class Program():
     def __do_coverage(self):
         if self.__args.coverage is not True:
             return
+        Message.out(f'[BUILD] Generating code coverage report...', Message.INF)
         if Os.is_posix():
             os.chdir(self.__PATH_TO_BUILD_DIR)                
             ret = subprocess.run(['make', 'coverage']).returncode
