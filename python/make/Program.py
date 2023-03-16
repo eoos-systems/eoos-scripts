@@ -67,9 +67,13 @@ class Program():
             return
             
         args = ['cmake']
+        if Os.is_posix() is True:
+            args.append('-DCMAKE_BUILD_TYPE=' + self.__args.config)        
         if self.__args.build == 'ALL':
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
             args.append('-DEOOS_ENABLE_TESTS=ON')
+            if Os.is_posix() is True and self.__args.coverage is True:
+                args.append('-DEOOS_ENABLE_GCC_COVERAGE=ON')
         elif self.__args.build == 'EOOS':
             pass
         else:
@@ -125,7 +129,11 @@ class Program():
         if self.__args.coverage is not True:
             return
         if Os.is_posix():
-            return
+            os.chdir(self.__PATH_TO_BUILD_DIR)                
+            ret = subprocess.run(['make', 'coverage']).returncode
+            os.chdir(self.__PATH_TO_SCRIPT_DIR)
+            if ret != 0:
+                raise Exception(f'UT execution error with exit code [{ret}]')            
         if Os.is_win32():
             path = f'./build/{self.__get_run_ut_executable_path_to()}/{self.__get_run_executable()}'
             args = ['OpenCppCoverage.exe'
