@@ -10,7 +10,7 @@ import shutil
 import subprocess
 
 from common.Message import Message
-from common.Os import Os
+from common.System import System
 
 class Program():
 
@@ -67,49 +67,50 @@ class Program():
             return
             
         args = ['cmake']
-        if Os.is_posix() is True:
+        if System.is_posix() is True:
             args.append('-DCMAKE_BUILD_TYPE=' + self.__args.config)        
         if self.__args.build == 'ALL':
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
             args.append('-DEOOS_ENABLE_TESTS=ON')
-            if Os.is_posix() is True and self.__args.coverage is True:
+            if System.is_posix() is True and self.__args.coverage is True:
                 args.append('-DEOOS_ENABLE_GCC_COVERAGE=ON')
         elif self.__args.build == 'EOOS':
             pass
         else:
             raise Exception(f'Cannot process --build {self.__args.build} argument')
         args.append('..')
-        os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(args).returncode
-        os.chdir(self.__PATH_TO_SCRIPT_DIR)        
-        if ret != 0:
-            raise Exception(f'CMake project is not generated with code [{ret}]')
+        self.__run_subprocess_from_build_dir(args)
         
         args.clear()
-        args = ['cmake', '--build', '.', '--config', self.__args.config]
-        Message.out(f'[BUILD] Building CMake project...', Message.INF)
-        if self.__args.jobs is not None:
-            args.append('-j') 
-            args.append(str(self.__args.jobs))
-        os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(args).returncode        
-        os.chdir(self.__PATH_TO_SCRIPT_DIR)        
-        if ret != 0:
-            raise Exception(f'CMake project is not built with code [{ret}]')        
+        if System.is_win32():
+            args = ['cmake', '--build', '.', '--config', self.__args.config]
+            Message.out(f'[BUILD] Building CMake project...', Message.INF)
+            if self.__args.jobs is not None:
+                args.append('-j') 
+                args.append(str(self.__args.jobs))
+        elif System.is_posix():
+            args = ['make', 'all']
+            Message.out(f'[BUILD] Building Make project...', Message.INF)
+            if self.__args.jobs is not None:
+                args.append('-j') 
+                args.append(str(self.__args.jobs))
+        else:
+            raise Exception(f'Unknown host operating system')
+        self.__run_subprocess_from_build_dir(args)
 
 
     def __do_install(self):
         if self.__args.install is not True:
             return
-        args = ['cmake', '--install', '.', '--config', self.__args.config]
-        if Os.is_posix():
-            args.insert(0, 'sudo')
-        Message.out(f'[BUILD] installing the library...', Message.INF)
-        os.chdir(self.__PATH_TO_BUILD_DIR)
-        ret = subprocess.run(args).returncode
-        os.chdir(self.__PATH_TO_SCRIPT_DIR)  
-        if ret != 0:
-            raise Exception(f'CMake project is not installed with code [{ret}]')        
+        Message.out(f'[BUILD] installing the library...', Message.INF)        
+        args = []
+        if System.is_posix():
+            args.extend(['sudo', 'make', 'install'])
+        elif System.is_win32():
+            args.extend(['cmake', '--install', '.', '--config', self.__args.config])
+        else:
+            raise Exception(f'Unknown host operating system')
+        self.__run_subprocess_from_build_dir(args)
 
 
     def __do_run(self):
@@ -117,66 +118,68 @@ class Program():
             return
         Message.out(f'[BUILD] Running unit tests...', Message.INF)
         args = [self.__get_run_executable(), '--gtest_shuffle']
-        os.chdir(self.__PATH_TO_BUILD_DIR)
-        os.chdir(self.__get_run_ut_executable_path_to())
-        ret = subprocess.run(args).returncode
-        os.chdir(self.__get_run_ut_executable_path_back())
-        os.chdir(self.__PATH_TO_SCRIPT_DIR)
-        if ret != 0:
-            raise Exception(f'UT execution error with exit code [{ret}]')
+        path_to = f'{self.__PATH_TO_BUILD_DIR}/{ self.__get_run_ut_executable_path_to()}'
+        path_back = f'{self.__get_run_ut_executable_path_back()}/{self.__PATH_TO_SCRIPT_DIR}'
+        self.__run_subprocess_from_build_dir(args, path_to, path_back)
 
 
     def __do_coverage(self):
         if self.__args.coverage is not True:
             return
         Message.out(f'[BUILD] Generating code coverage report...', Message.INF)
-        if Os.is_posix():
-            os.chdir(self.__PATH_TO_BUILD_DIR)                
-            ret = subprocess.run(['make', 'coverage']).returncode
-            os.chdir(self.__PATH_TO_SCRIPT_DIR)
-            if ret != 0:
-                raise Exception(f'UT execution error with exit code [{ret}]')            
-        if Os.is_win32():
+        if System.is_posix():
+            args = ['make', 'coverage']
+            self.__run_subprocess_from_build_dir(args)
+        if System.is_win32():
             path = f'./build/{self.__get_run_ut_executable_path_to()}/{self.__get_run_executable()}'
             args = ['OpenCppCoverage.exe'
                 , '--sources', 'codebase\interface'
                 , '--sources', 'codebase\library'
                 , '--sources', 'codebase\system'
                 , '--export_type', 'html:build\coverage'
-                , '--', path]
-            os.chdir(f'{self.__PATH_TO_BUILD_DIR}/..')                
-            ret = subprocess.run(args).returncode
-            os.chdir(f'./build/{self.__PATH_TO_SCRIPT_DIR}')
-            if ret != 0:
-                raise Exception(f'UT execution error with exit code [{ret}]')
-            return
+                , '--', path]            
+            path_to = f'{self.__PATH_TO_BUILD_DIR}/..'
+            path_back = f'./build/{self.__PATH_TO_SCRIPT_DIR}'
+            self.__run_subprocess_from_build_dir(args, path_to, path_back)            
+
+        
+    def __run_subprocess_from_build_dir(self, args, path_to=None, path_back=None):
+        if path_to is None: 
+            path_to = self.__PATH_TO_BUILD_DIR
+        if path_back is None:
+            path_back = self.__PATH_TO_SCRIPT_DIR
+        os.chdir(path_to)
+        ret = subprocess.run(args).returncode        
+        os.chdir(path_back)
+        if ret != 0:
+            raise Exception(f'CMake project is not built with code [{ret}]')                                    
 
 
     def __get_run_ut_executable_path_to(self):
-        if Os.is_posix():
+        if System.is_posix():
             return f'./codebase/tests'
-        elif Os.is_win32():
+        elif System.is_win32():
             return f'./codebase/tests/{self.__args.config}'
         else:
-            raise Exception(f'Unknown OS to build')
+            raise Exception(f'Unknown host operating system')
 
 
     def __get_run_ut_executable_path_back(self):
-        if Os.is_posix():
+        if System.is_posix():
             return f'./../..'
-        elif Os.is_win32():
+        elif System.is_win32():
             return f'./../../..'
         else:
-            raise Exception(f'Unknown OS to build')
+            raise Exception(f'Unknown host operating system')
 
 
     def __get_run_executable(self):
-        if Os.is_posix():
+        if System.is_posix():
             return f'./EoosTests'
-        elif Os.is_win32():
+        elif System.is_win32():
             return f'EoosTests.exe'
         else:
-            raise Exception(f'Unknown OS to build')
+            raise Exception(f'Unknown host operating system')
 
 
     def __check_run_path(self):
@@ -248,5 +251,5 @@ class Program():
     __PROGRAM_NAME = 'EOOS Automotive Project Builder'
     __PROGRAM_VERSION = '1.0.0'
     __PATH_TO_BUILD_DIR = './../../build'
-    __PATH_TO_SCRIPT_DIR = "./../scripts/python"
+    __PATH_TO_SCRIPT_DIR = './../scripts/python'
  
