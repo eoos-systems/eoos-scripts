@@ -68,14 +68,14 @@ class Program():
             
         args = ['cmake']
         if System.is_posix() is True:
-            args.append('-DCMAKE_BUILD_TYPE=' + self.__args.config)        
+            args.append('-DCMAKE_BUILD_TYPE=' + self.__args.config)
         if self.__args.build == 'ALL':
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
             args.append('-DEOOS_ENABLE_TESTS=ON')
             if System.is_posix() is True and self.__args.coverage is True:
                 args.append('-DEOOS_ENABLE_GCC_COVERAGE=ON')
         elif self.__args.build == 'EOOS':
-            pass
+            Message.out(f'[BUILD] Generating CMake project for the EOOS target...', Message.INF)
         else:
             raise Exception(f'Cannot process --build {self.__args.build} argument')
         args.append('..')
@@ -83,19 +83,15 @@ class Program():
         
         args.clear()
         if System.is_win32():
+            Message.out(f'[BUILD] Building CMake project...', Message.INF)            
             args = ['cmake', '--build', '.', '--config', self.__args.config]
-            Message.out(f'[BUILD] Building CMake project...', Message.INF)
-            if self.__args.jobs is not None:
-                args.append('-j') 
-                args.append(str(self.__args.jobs))
         elif System.is_posix():
+            Message.out(f'[BUILD] Building Make project...', Message.INF)            
             args = ['make', 'all']
-            Message.out(f'[BUILD] Building Make project...', Message.INF)
-            if self.__args.jobs is not None:
-                args.append('-j') 
-                args.append(str(self.__args.jobs))
         else:
             raise Exception(f'Unknown host operating system')
+        if self.__args.jobs is not None:
+            args.extend(['-j', str(self.__args.jobs)])         
         self.__run_subprocess_from_build_dir(args)
 
 
@@ -152,7 +148,7 @@ class Program():
         ret = subprocess.run(args).returncode        
         os.chdir(path_back)
         if ret != 0:
-            raise Exception(f'CMake project is not built with code [{ret}]')                                    
+            raise Exception(f'CMake project is not built with code [{ret}]')
 
 
     def __get_run_ut_executable_path_to(self):
