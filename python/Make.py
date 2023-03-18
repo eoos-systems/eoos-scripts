@@ -4,12 +4,21 @@
 # @copyright 2023, Sergey Baigudin, Baigudin Software
 
 import sys
-from make.Program import Program
+
+from common.System import System
+from make.ProgramOnUbuntu import ProgramOnUbuntu
+from make.ProgramOnWindows import ProgramOnWindows
 
 
 def main():
     try:
-        program = Program()
+        program = None
+        if System.is_posix():
+            program = ProgramOnUbuntu()
+        elif System.is_win32():
+            program = ProgramOnWindows()
+        else:
+            raise Exception(f'Unknown host operating system')
         return program.execute()
     except BaseException as e:
         print(e)    

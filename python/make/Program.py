@@ -9,10 +9,14 @@ import argparse
 import shutil
 import subprocess
 
+from abc import ABC, abstractmethod
+from make.IProgram import IProgram
 from common.Message import Message
-from common.System import System
 
-class Program():
+class Program(IProgram):
+    """
+    Abstatact base program.
+    """
 
     def __init__(self):
         self.__args = None
@@ -28,10 +32,10 @@ class Program():
             self.__print_args()
             self.__do_clean()
             self.__do_create()
-            self.__do_build()
-            self.__do_install()
+            self._do_build()
+            self._do_install()
             self.__do_run()
-            self.__do_coverage()
+            self._do_coverage()
         except Exception as e:
             Message.out(f'[EXCEPTION] {e}', Message.ERR)        
             error = 1
@@ -44,10 +48,79 @@ class Program():
             time_execute = round(time.time() - time_start, 9)
             Message.out(f'{self.__PROGRAM_NAME} has{not_word} been completed in {str(time_execute)} seconds', status, is_block=True)
             return error
-          
-          
+
+
+    @abstractmethod
+    def _do_build(self):
+        """
+        Builds EOOS system.
+        """
+        pass
+
+
+    @abstractmethod
+    def _do_install(self):
+        """
+        Installs EOOS system.
+        """
+        pass
+
+    @abstractmethod
+    def _do_coverage(self):
+        """
+        Creates EOOS UT code coverage report.
+        """
+        pass
+
+
+    @abstractmethod
+    def _get_run_ut_executable_path_to(self):
+        """
+        Returns path to EOOS UT executable file.
+        """
+        pass
+
+
+    @abstractmethod    
+    def _get_run_ut_executable_path_back(self):
+        """
+        Returns path back from EOOS UT executable file.
+        """
+        pass
+
+
+    @abstractmethod
+    def _get_run_executable(self):
+        """
+        Returns UT executablr file name.
+        """
+        pass
+
+
+    def _get_args(self):
+        """
+        Returns program arguments.
+        """
+        return self.__args
+    
+    
+    def _run_subprocess_from_build_dir(self, args, path_to=None, path_back=None):
+        """
+        Runs a sub-process with given args changing current working directory.
+        """
+        if path_to is None: 
+            path_to = self.__PATH_TO_BUILD_DIR
+        if path_back is None:
+            path_back = self.__PATH_TO_SCRIPT_DIR
+        os.chdir(path_to)
+        ret = subprocess.run(args).returncode        
+        os.chdir(path_back)
+        if ret != 0:
+            raise Exception(f'CMake project is not built with code [{ret}]')
+
+
     def __do_clean(self):
-        if self.__args.clean is not True:
+        if self._get_args().clean is not True:
             return
         if os.path.isdir(self.__PATH_TO_BUILD_DIR):
             Message.out(f'[BUILD] Deleting "build" directory...', Message.INF)        
@@ -62,120 +135,14 @@ class Program():
             os.makedirs(self.__PATH_TO_BUILD_DIR + '/sca')
 
 
-    def __do_build(self):
-        if self.__args.build is None:    
-            return
-            
-        args = ['cmake']
-        if System.is_posix() is True:
-            args.append('-DCMAKE_BUILD_TYPE=' + self.__args.config)
-        if self.__args.build == 'ALL':
-            Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
-            args.append('-DEOOS_ENABLE_TESTS=ON')
-            if System.is_posix() is True and self.__args.coverage is True:
-                args.append('-DEOOS_ENABLE_GCC_COVERAGE=ON')
-        elif self.__args.build == 'EOOS':
-            Message.out(f'[BUILD] Generating CMake project for the EOOS target...', Message.INF)
-        else:
-            raise Exception(f'Cannot process --build {self.__args.build} argument')
-        args.append('..')
-        self.__run_subprocess_from_build_dir(args)
-        
-        args.clear()
-        if System.is_win32():
-            Message.out(f'[BUILD] Building CMake project...', Message.INF)            
-            args = ['cmake', '--build', '.', '--config', self.__args.config]
-        elif System.is_posix():
-            Message.out(f'[BUILD] Building Make project...', Message.INF)            
-            args = ['make', 'all']
-        else:
-            raise Exception(f'Unknown host operating system')
-        if self.__args.jobs is not None:
-            args.extend(['-j', str(self.__args.jobs)])         
-        self.__run_subprocess_from_build_dir(args)
-
-
-    def __do_install(self):
-        if self.__args.install is not True:
-            return
-        Message.out(f'[BUILD] installing the library...', Message.INF)        
-        args = []
-        if System.is_posix():
-            args.extend(['sudo', 'make', 'install'])
-        elif System.is_win32():
-            args.extend(['cmake', '--install', '.', '--config', self.__args.config])
-        else:
-            raise Exception(f'Unknown host operating system')
-        self.__run_subprocess_from_build_dir(args)
-
-
     def __do_run(self):
-        if self.__args.run is not True:
+        if self._get_args().run is not True:
             return
         Message.out(f'[BUILD] Running unit tests...', Message.INF)
-        args = [self.__get_run_executable(), '--gtest_shuffle']
-        path_to = f'{self.__PATH_TO_BUILD_DIR}/{ self.__get_run_ut_executable_path_to()}'
-        path_back = f'{self.__get_run_ut_executable_path_back()}/{self.__PATH_TO_SCRIPT_DIR}'
-        self.__run_subprocess_from_build_dir(args, path_to, path_back)
-
-
-    def __do_coverage(self):
-        if self.__args.coverage is not True:
-            return
-        Message.out(f'[BUILD] Generating code coverage report...', Message.INF)
-        if System.is_posix():
-            args = ['make', 'coverage']
-            self.__run_subprocess_from_build_dir(args)
-        if System.is_win32():
-            path = f'./build/{self.__get_run_ut_executable_path_to()}/{self.__get_run_executable()}'
-            args = ['OpenCppCoverage.exe'
-                , '--sources', 'codebase\interface'
-                , '--sources', 'codebase\library'
-                , '--sources', 'codebase\system'
-                , '--export_type', 'html:build\coverage'
-                , '--', path]            
-            path_to = f'{self.__PATH_TO_BUILD_DIR}/..'
-            path_back = f'./build/{self.__PATH_TO_SCRIPT_DIR}'
-            self.__run_subprocess_from_build_dir(args, path_to, path_back)            
-
-        
-    def __run_subprocess_from_build_dir(self, args, path_to=None, path_back=None):
-        if path_to is None: 
-            path_to = self.__PATH_TO_BUILD_DIR
-        if path_back is None:
-            path_back = self.__PATH_TO_SCRIPT_DIR
-        os.chdir(path_to)
-        ret = subprocess.run(args).returncode        
-        os.chdir(path_back)
-        if ret != 0:
-            raise Exception(f'CMake project is not built with code [{ret}]')
-
-
-    def __get_run_ut_executable_path_to(self):
-        if System.is_posix():
-            return f'./codebase/tests'
-        elif System.is_win32():
-            return f'./codebase/tests/{self.__args.config}'
-        else:
-            raise Exception(f'Unknown host operating system')
-
-
-    def __get_run_ut_executable_path_back(self):
-        if System.is_posix():
-            return f'./../..'
-        elif System.is_win32():
-            return f'./../../..'
-        else:
-            raise Exception(f'Unknown host operating system')
-
-
-    def __get_run_executable(self):
-        if System.is_posix():
-            return f'./EoosTests'
-        elif System.is_win32():
-            return f'EoosTests.exe'
-        else:
-            raise Exception(f'Unknown host operating system')
+        args = [self._get_run_executable(), '--gtest_shuffle']
+        path_to = f'{self.__PATH_TO_BUILD_DIR}/{ self._get_run_ut_executable_path_to()}'
+        path_back = f'{self._get_run_ut_executable_path_back()}/{self.__PATH_TO_SCRIPT_DIR}'
+        self._run_subprocess_from_build_dir(args, path_to, path_back)
 
 
     def __check_run_path(self):
@@ -226,21 +193,21 @@ class Program():
         
         
     def __print_args(self):
-        if self.__args.clean is True:
-            Message.out(f'[INFO] Argument CLEAN = {self.__args.clean}', Message.INF)
-        if self.__args.build is not None:
-            Message.out(f'[INFO] Argument BUILD = {self.__args.build}', Message.INF)
-        if self.__args.run is True:
-            Message.out(f'[INFO] Argument RUN = {self.__args.run}', Message.INF)
-        if self.__args.coverage is True:
-            Message.out(f'[INFO] Argument COVERAGE = {self.__args.coverage}', Message.INF)
-        if self.__args.install is True:
-            Message.out(f'[INFO] Argument INSTALL = {self.__args.install}', Message.INF)
-        if self.__args.config is not None:
-            Message.out(f'[INFO] Argument CONFIG = {self.__args.config}', Message.INF)
-        if self.__args.jobs is not None:
-            Message.out(f'[INFO] Argument JOBS = {self.__args.jobs}', Message.INF)
-        if self.__args.install is True:
+        if self._get_args().clean is True:
+            Message.out(f'[INFO] Argument CLEAN = {self._get_args().clean}', Message.INF)
+        if self._get_args().build is not None:
+            Message.out(f'[INFO] Argument BUILD = {self._get_args().build}', Message.INF)
+        if self._get_args().run is True:
+            Message.out(f'[INFO] Argument RUN = {self._get_args().run}', Message.INF)
+        if self._get_args().coverage is True:
+            Message.out(f'[INFO] Argument COVERAGE = {self._get_args().coverage}', Message.INF)
+        if self._get_args().install is True:
+            Message.out(f'[INFO] Argument INSTALL = {self._get_args().install}', Message.INF)
+        if self._get_args().config is not None:
+            Message.out(f'[INFO] Argument CONFIG = {self._get_args().config}', Message.INF)
+        if self._get_args().jobs is not None:
+            Message.out(f'[INFO] Argument JOBS = {self._get_args().jobs}', Message.INF)
+        if self._get_args().install is True:
             Message.out(f'[NOTE] To install EOOS on Windows, a console has to be run as Administrator.', Message.NOR)
 
 
