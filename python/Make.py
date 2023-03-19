@@ -6,17 +6,17 @@
 import sys
 
 from common.System import System
-from make.ProgramOnUbuntu import ProgramOnUbuntu
-from make.ProgramOnWindows import ProgramOnWindows
+from make.ProgramOnPosix import ProgramOnPosix
+from make.ProgramOnWin32 import ProgramOnWin32
 
 
 def main():
     try:
         program = None
         if System.is_posix():
-            program = ProgramOnUbuntu()
+            program = ProgramOnPosix()
         elif System.is_win32():
-            program = ProgramOnWindows()
+            program = ProgramOnWin32()
         else:
             raise Exception(f'Unknown host operating system')
         return program.execute()

@@ -10,7 +10,7 @@ import shutil
 import subprocess
 
 from abc import ABC, abstractmethod
-from make.IProgram import IProgram
+from common.IProgram import IProgram
 from common.Message import Message
 
 class Program(IProgram):
@@ -65,6 +65,7 @@ class Program(IProgram):
         """
         pass
 
+
     @abstractmethod
     def _do_coverage(self):
         """
@@ -97,13 +98,6 @@ class Program(IProgram):
         pass
 
 
-    def _get_args(self):
-        """
-        Returns program arguments.
-        """
-        return self.__args
-    
-    
     def _run_subprocess_from_build_dir(self, args, path_to=None, path_back=None):
         """
         Runs a sub-process with given args changing current working directory.
@@ -117,6 +111,13 @@ class Program(IProgram):
         os.chdir(path_back)
         if ret != 0:
             raise Exception(f'CMake project is not built with code [{ret}]')
+
+
+    def _get_args(self):
+        """
+        Returns program arguments.
+        """
+        return self.__args
 
 
     def __do_clean(self):
