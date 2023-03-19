@@ -37,7 +37,7 @@ class ProgramOnWin32(Program):
     def _do_install(self):    
         if self._get_args().install is True:
             Message.out(f'[BUILD] installing the library...', Message.INF)        
-            args = ['cmake', '--install', '.', '--config', self.__args.config]
+            args = ['cmake', '--install', '.', '--config', self._get_args().config]
             self._run_subprocess_from_build_dir(args)
 
 
