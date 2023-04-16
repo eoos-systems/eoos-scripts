@@ -18,18 +18,23 @@ class ProgramOnPosix(Program):
         args = ['cmake', f'-DCMAKE_BUILD_TYPE={self._get_args().config}']
         if self._get_args().build == 'ALL':
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
-            args.append('-DEOOS_ENABLE_TESTS=ON')
+            args.append('-DEOOS_CMAKE_ENABLE_TESTS=ON')
             if self._get_args().coverage is True:
                 args.append('-DEOOS_ENABLE_GCC_COVERAGE=ON')
         elif self._get_args().build == 'EOOS':
             Message.out(f'[BUILD] Generating CMake project for the EOOS target...', Message.INF)
         else:
             raise Exception(f'Cannot process --build {self._get_args().build} argument')
+        if self._get_args().define is not None:
+            for d in self._get_args().define:
+                args.append(f'-D{d}')
         args.append('..')
         self._run_subprocess_from_build_dir(args)
         
         args.clear()
-        args = ['make', 'all']        
+        args = ['make', 'all']
+        if self._get_args().verbose is True:
+            args.append('VERBOSE=1')        
         if self._get_args().jobs is not None:
             args.extend(['-j', str(self._get_args().jobs)])
         Message.out(f'[BUILD] Building Make project...', Message.INF)                

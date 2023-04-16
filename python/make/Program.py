@@ -187,6 +187,13 @@ class Program(IProgram):
         parser.add_argument('-j', '--jobs'\
             , type=int\
             , help='set number of parallel jobs to build')
+        parser.add_argument('--verbose'\
+            , action='store_true'\
+            , help='verbose compiler output')
+        parser.add_argument('-d', '--define'\
+            , metavar='DEFINITIONS'\
+            , nargs='*'
+            , help='create or update a CMake cache entry in DEFINITIONS format <var>:<type>=<value>, or <var>=<value>')
         parser.add_argument('--version'\
             , action='version'\
             , version=f'%(prog)s {self.__PROGRAM_VERSION}')
@@ -195,19 +202,24 @@ class Program(IProgram):
         
     def __print_args(self):
         if self._get_args().clean is True:
-            Message.out(f'[INFO] Argument CLEAN = {self._get_args().clean}', Message.INF)
+            Message.out(f'[INFO] Argument CLEAN: {self._get_args().clean}', Message.INF)
         if self._get_args().build is not None:
-            Message.out(f'[INFO] Argument BUILD = {self._get_args().build}', Message.INF)
+            Message.out(f'[INFO] Argument BUILD: {self._get_args().build}', Message.INF)
         if self._get_args().run is True:
-            Message.out(f'[INFO] Argument RUN = {self._get_args().run}', Message.INF)
+            Message.out(f'[INFO] Argument RUN: {self._get_args().run}', Message.INF)
         if self._get_args().coverage is True:
-            Message.out(f'[INFO] Argument COVERAGE = {self._get_args().coverage}', Message.INF)
+            Message.out(f'[INFO] Argument COVERAGE: {self._get_args().coverage}', Message.INF)
         if self._get_args().install is True:
-            Message.out(f'[INFO] Argument INSTALL = {self._get_args().install}', Message.INF)
+            Message.out(f'[INFO] Argument INSTALL: {self._get_args().install}', Message.INF)
         if self._get_args().config is not None:
-            Message.out(f'[INFO] Argument CONFIG = {self._get_args().config}', Message.INF)
+            Message.out(f'[INFO] Argument CONFIG: {self._get_args().config}', Message.INF)
         if self._get_args().jobs is not None:
-            Message.out(f'[INFO] Argument JOBS = {self._get_args().jobs}', Message.INF)
+            Message.out(f'[INFO] Argument JOBS: {self._get_args().jobs}', Message.INF)
+        if self._get_args().verbose is True:
+            Message.out(f'[INFO] Argument VERBOSE: {self._get_args().verbose}', Message.INF)
+        if self._get_args().define is not None:
+            for i, d in enumerate(self._get_args().define):
+                Message.out(f'[INFO] Argument DEFINE {i}: {d}', Message.INF)
         if self._get_args().install is True:
             Message.out(f'[NOTE] To install EOOS on Windows, a console has to be run as Administrator.', Message.NOR)
 
