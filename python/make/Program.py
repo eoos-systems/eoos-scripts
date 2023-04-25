@@ -103,9 +103,9 @@ class Program(IProgram):
         Runs a sub-process with given args changing current working directory.
         """
         if path_to is None: 
-            path_to = self.__PATH_TO_BUILD_DIR
+            path_to = self._PATH_TO_BUILD_DIR
         if path_back is None:
-            path_back = self.__PATH_TO_SCRIPT_DIR
+            path_back = self._PATH_TO_SCRIPT_DIR
         os.chdir(path_to)
         ret = subprocess.run(args).returncode        
         os.chdir(path_back)
@@ -123,17 +123,17 @@ class Program(IProgram):
     def __do_clean(self):
         if self._get_args().clean is not True:
             return
-        if os.path.isdir(self.__PATH_TO_BUILD_DIR):
+        if os.path.isdir(self._PATH_TO_BUILD_DIR):
             Message.out(f'[BUILD] Deleting "build" directory...', Message.INF)        
-            shutil.rmtree(self.__PATH_TO_BUILD_DIR)
+            shutil.rmtree(self._PATH_TO_BUILD_DIR)
             
             
     def __do_create(self):
-        if not os.path.exists(self.__PATH_TO_BUILD_DIR):
+        if not os.path.exists(self._PATH_TO_BUILD_DIR):
             Message.out(f'[BUILD] Creating "build" directory...', Message.INF)
-            os.makedirs(self.__PATH_TO_BUILD_DIR)
-            os.makedirs(self.__PATH_TO_BUILD_DIR + '/CMakeInstallDir')
-            os.makedirs(self.__PATH_TO_BUILD_DIR + '/sca')
+            os.makedirs(self._PATH_TO_BUILD_DIR)
+            os.makedirs(self._PATH_TO_BUILD_DIR + '/CMakeInstallDir')
+            os.makedirs(self._PATH_TO_BUILD_DIR + '/sca')
 
 
     def __do_run(self):
@@ -141,8 +141,8 @@ class Program(IProgram):
             return
         Message.out(f'[BUILD] Running unit tests...', Message.INF)
         args = [self._get_run_executable(), '--gtest_shuffle']
-        path_to = f'{self.__PATH_TO_BUILD_DIR}/{ self._get_run_ut_executable_path_to()}'
-        path_back = f'{self._get_run_ut_executable_path_back()}/{self.__PATH_TO_SCRIPT_DIR}'
+        path_to = f'{self._PATH_TO_BUILD_DIR}/{ self._get_run_ut_executable_path_to()}'
+        path_back = f'{self._get_run_ut_executable_path_back()}/{self._PATH_TO_SCRIPT_DIR}'
         self._run_subprocess_from_build_dir(args, path_to, path_back)
 
 
@@ -226,6 +226,6 @@ class Program(IProgram):
 
     __PROGRAM_NAME = 'EOOS Automotive Project Builder'
     __PROGRAM_VERSION = '1.0.0'
-    __PATH_TO_BUILD_DIR = './../../build'
-    __PATH_TO_SCRIPT_DIR = './../scripts/python'
+    _PATH_TO_BUILD_DIR = './../../build'
+    _PATH_TO_SCRIPT_DIR = './../scripts/python'
  

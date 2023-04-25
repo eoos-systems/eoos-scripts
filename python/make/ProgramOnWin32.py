@@ -50,15 +50,15 @@ class ProgramOnWin32(Program):
         if self._get_args().coverage is not True:
             return
         Message.out(f'[BUILD] Generating code coverage report...', Message.INF)
-        path = f'./build/{self.__get_run_ut_executable_path_to()}/{self.__get_run_executable()}'
+        path = f'./build/{self._get_run_ut_executable_path_to()}/{self._get_run_executable()}'
         args = ['OpenCppCoverage.exe'
             , '--sources', 'codebase\interface'
             , '--sources', 'codebase\library'
             , '--sources', 'codebase\system'
             , '--export_type', 'html:build\coverage'
             , '--', path]            
-        path_to = f'{self.__PATH_TO_BUILD_DIR}/..'
-        path_back = f'./build/{self.__PATH_TO_SCRIPT_DIR}'
+        path_to = f'{self._PATH_TO_BUILD_DIR}/..'
+        path_back = f'./build/{self._PATH_TO_SCRIPT_DIR}'
         self._run_subprocess_from_build_dir(args, path_to, path_back)
 
 
