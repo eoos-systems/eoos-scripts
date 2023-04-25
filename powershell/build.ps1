@@ -63,7 +63,7 @@ function Build()
     cd -Path $pathScriptToBuildDir # CDIR: REPOSITORY/build>
        
     Out-Note -String "Generate CMake project" "INF" -Inf
-    cmake -DEOOS_ENABLE_TESTS=ON ..
+    cmake -DEOOS_CMAKE_ENABLE_TESTS=ON ..
     
     if($build)
     {

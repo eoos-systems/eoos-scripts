@@ -20,7 +20,7 @@ class ProgramOnPosix(Program):
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
             args.append('-DEOOS_CMAKE_ENABLE_TESTS=ON')
             if self._get_args().coverage is True:
-                args.append('-DEOOS_ENABLE_GCC_COVERAGE=ON')
+                args.append('-DEOOS_CMAKE_ENABLE_GCC_COVERAGE=ON')
         elif self._get_args().build == 'EOOS':
             Message.out(f'[BUILD] Generating CMake project for the EOOS target...', Message.INF)
         else:
