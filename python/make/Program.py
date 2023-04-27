@@ -137,10 +137,18 @@ class Program(IProgram):
 
 
     def __do_run(self):
-        if self._get_args().run is not True:
+        if self._get_args().run is None:
             return
         Message.out(f'[BUILD] Running unit tests...', Message.INF)
         args = [self._get_run_executable(), '--gtest_shuffle']
+        if len(self._get_args().run) > 0:
+            arg = '--gtest_filter='
+            if self._get_args().run is not None:
+                for i, r in enumerate(self._get_args().run):
+                    arg += r
+                    if i != len(self._get_args().run) - 1:
+                        arg += ':'
+            args.append(arg)
         path_to = f'{self._PATH_TO_BUILD_DIR}/{ self._get_run_ut_executable_path_to()}'
         path_back = f'{self._get_run_ut_executable_path_back()}/{self._PATH_TO_SCRIPT_DIR}'
         self._run_subprocess_from_build_dir(args, path_to, path_back)
@@ -172,7 +180,8 @@ class Program(IProgram):
             , choices=['EOOS', 'ALL']\
             , help='compile the project')
         parser.add_argument('-r', '--run'\
-            , action='store_true'\
+            , metavar='GTEST_FILTER_PATTERN'\
+            , nargs='*'
             , help='run unit tests')
         parser.add_argument('--coverage'\
             , action='store_true'\
@@ -205,8 +214,10 @@ class Program(IProgram):
             Message.out(f'[INFO] Argument CLEAN: {self._get_args().clean}', Message.INF)
         if self._get_args().build is not None:
             Message.out(f'[INFO] Argument BUILD: {self._get_args().build}', Message.INF)
-        if self._get_args().run is True:
-            Message.out(f'[INFO] Argument RUN: {self._get_args().run}', Message.INF)
+        if self._get_args().run is not None:
+            Message.out(f'[INFO] Argument RUN: PASSED', Message.INF)
+            for i, d in enumerate(self._get_args().run):
+                Message.out(f'[INFO] Argument RUN {i}: {d}', Message.INF)
         if self._get_args().coverage is True:
             Message.out(f'[INFO] Argument COVERAGE: {self._get_args().coverage}', Message.INF)
         if self._get_args().install is True:
@@ -218,6 +229,7 @@ class Program(IProgram):
         if self._get_args().verbose is True:
             Message.out(f'[INFO] Argument VERBOSE: {self._get_args().verbose}', Message.INF)
         if self._get_args().define is not None:
+            Message.out(f'[INFO] Argument DEFINE: PASSED', Message.INF)
             for i, d in enumerate(self._get_args().define):
                 Message.out(f'[INFO] Argument DEFINE {i}: {d}', Message.INF)
         if self._get_args().install is True:
