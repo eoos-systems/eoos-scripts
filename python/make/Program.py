@@ -237,7 +237,7 @@ class Program(IProgram):
 
 
     __PROGRAM_NAME = 'EOOS Automotive Project Builder'
-    __PROGRAM_VERSION = '1.0.0'
+    __PROGRAM_VERSION = '1.1.0'
     _PATH_TO_BUILD_DIR = './../../build'
     _PATH_TO_SCRIPT_DIR = './../scripts/python'
  
