@@ -110,7 +110,7 @@ class Program(IProgram):
         ret = subprocess.run(args).returncode        
         os.chdir(path_back)
         if ret != 0:
-            raise Exception(f'CMake project is not built with code [{ret}]')
+            raise Exception(f'Execution aborted with return code [{ret}]')
 
 
     def _get_args(self):
