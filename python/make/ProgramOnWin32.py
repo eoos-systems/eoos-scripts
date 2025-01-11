@@ -10,11 +10,11 @@ class ProgramOnWin32(Program):
     """
     Program on WIN32.
     """
-   
-    def _do_build(self):    
-        if self._get_args().build is None:    
+
+    def _do_build(self):
+        if self._get_args().build is None:
             return
-            
+
         args = ['cmake']
         if self._get_args().build == 'ALL':
             Message.out(f'[BUILD] Generating CMake project for all targets...', Message.INF)
@@ -28,22 +28,26 @@ class ProgramOnWin32(Program):
                 args.append(f'-D{d}')
         args.append('..')
         self._run_subprocess_from_build_dir(args)
-        
+
         args.clear()
-        Message.out(f'[BUILD] Building CMake project...', Message.INF)     
+        Message.out(f'[BUILD] Building CMake project...', Message.INF)
         args = ['cmake', '--build', '.', '--config', self._get_args().config]
         if self._get_args().verbose is True:
             args.append('--verbose')
         if self._get_args().jobs is not None:
-            args.extend(['-j', str(self._get_args().jobs)])         
+            args.extend(['-j', str(self._get_args().jobs)])
         self._run_subprocess_from_build_dir(args)
 
 
-    def _do_install(self):    
+    def _do_install(self):
         if self._get_args().install is True:
-            Message.out(f'[BUILD] installing the library...', Message.INF)        
+            Message.out(f'[BUILD] installing the library...', Message.INF)
             args = ['cmake', '--install', '.', '--config', self._get_args().config]
             self._run_subprocess_from_build_dir(args)
+
+
+    def _do_run(self):
+        self._do_run_ut()
 
 
     def _do_coverage(self):
@@ -56,7 +60,7 @@ class ProgramOnWin32(Program):
             , '--sources', 'codebase\library'
             , '--sources', 'codebase\system'
             , '--export_type', 'html:build\coverage'
-            , '--', path]            
+            , '--', path]
         path_to = f'{self._PATH_TO_BUILD_DIR}/..'
         path_back = f'./build/{self._PATH_TO_SCRIPT_DIR}'
         self._run_subprocess_from_build_dir(args, path_to, path_back)
