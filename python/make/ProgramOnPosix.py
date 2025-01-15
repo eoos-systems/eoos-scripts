@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 # @file      ProgramOnPosix.py
 # @author    Sergey Baigudin, sergey@baigudin.software
-# @copyright 2023, Sergey Baigudin, Baigudin Software
+# @copyright 2023-2025, Sergey Baigudin, Baigudin Software
 
 from make.Program import Program
+from common.System import System
 from common.Message import Message
 
 class ProgramOnPosix(Program):
     """
     Program on POSIX.
     """
+
+    def __init__(self, args):
+        if System.is_linux() is not True:
+            raise Exception(f'Unsuppoted host OS')
+        super().__init__(args)
+
 
     def _do_build(self):
         if self._get_args().build is None:

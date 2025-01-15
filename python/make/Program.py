@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # @file      Program.py
 # @author    Sergey Baigudin, sergey@baigudin.software
-# @copyright 2023-2024, Sergey Baigudin, Baigudin Software
+# @copyright 2023-2025, Sergey Baigudin, Baigudin Software
 
 import os
 import shutil

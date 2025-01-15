@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # @file      Make.py
 # @author    Sergey Baigudin, sergey@baigudin.software
-# @copyright 2023-2024, Sergey Baigudin, Baigudin Software
+# @copyright 2023-2025, Sergey Baigudin, Baigudin Software
 
 import sys
 import time
@@ -34,22 +34,14 @@ class Make:
             self.__print_args()
             program = None
 
-            if self.__get_args().project is None:
-                if System.is_posix():
-                    program = ProgramOnPosix( self.__get_args() )
-                elif System.is_win32():
-                    program = ProgramOnWin32( self.__get_args() )
-                else:
-                    raise Exception(f'System is not detected')
+            if self.__get_args().eoos == f'POSIX':
+                program = ProgramOnPosix( self.__get_args() )
+            elif self.__get_args().eoos == f'WIN32':
+                program = ProgramOnWin32( self.__get_args() )
+            elif self.__get_args().eoos == f'FreeRTOS':
+                program = ProgramOnFreeRTOS( self.__get_args() )
             else:
-                if self.__get_args().project == f'POSIX':
-                    program = ProgramOnPosix( self.__get_args() )
-                elif self.__get_args().project == f'WIN32':
-                    program = ProgramOnWin32( self.__get_args() )
-                elif self.__get_args().project == f'FreeRTOS':
-                    program = ProgramOnFreeRTOS( self.__get_args() )
-                else:
-                    raise Exception(f'Project not supported')
+                raise Exception(f'EOOS project not supported')
 
             if program is not None:
                 program.execute()
@@ -77,50 +69,63 @@ class Make:
 
     def __parse_args(self):
         parser = argparse.ArgumentParser(prog=self.__PROGRAM_NAME\
-            , description='Builds and installs the EOOS project to your host OS'\
-            , epilog='(c) 2023-2024, Sergey Baigudin, Baigudin Software' )
-        parser.add_argument('-p', '--project'\
-            , choices=['POSIX', 'WIN32', 'FreeRTOS']\
-            , help='select project')
-        parser.add_argument('-c', '--clean'\
-            , action='store_true'\
-            , help='rebuild the project by removing the "build" directory')
-        parser.add_argument('-b', '--build'\
-            , choices=['EOOS', 'ALL']\
-            , help='compile the project')
-        parser.add_argument('-r', '--run'\
-            , metavar='GTEST_FILTER_PATTERN'\
-            , nargs='*'
-            , help='run unit tests')
-        parser.add_argument('--coverage'\
-            , action='store_true'\
-            , help='run unit tests and create code coverage report')
-        parser.add_argument('--install'\
-            , action='store_true'\
-            , help='install on OS')
-        parser.add_argument('--config'\
-            , choices=['Release', 'Debug', 'RelWithDebInfo', 'MinSizeRel']\
-            , default='Debug'
-            , help='set project configuration')
-        parser.add_argument('-j', '--jobs'\
-            , type=int\
-            , help='set number of parallel jobs to build')
-        parser.add_argument('--verbose'\
-            , action='store_true'\
-            , help='verbose compiler output')
-        parser.add_argument('-d', '--define'\
-            , metavar='DEFINITIONS'\
-            , nargs='*'
-            , help='create or update a CMake cache entry in DEFINITIONS format <var>:<type>=<value>, or <var>=<value>')
-        parser.add_argument('--version'\
-            , action='version'\
-            , version=f'%(prog)s {self.__PROGRAM_VERSION}')
+            , description='Builds and installs the EOOS project to your host OS, or HW platform' \
+            , epilog='(c) 2023-2025, Sergey Baigudin, Baigudin Software' \
+        )
+        parser.add_argument('-e', '--eoos' \
+            , choices=['POSIX', 'WIN32', 'FreeRTOS'] \
+            , help='select a target EOOS project' \
+            , required=True \
+        )
+        parser.add_argument('-c', '--clean' \
+            , action='store_true' \
+            , help='rebuild the project by removing the `build` directory artifacts' \
+        )
+        parser.add_argument('-b', '--build' \
+            , choices=['EOOS', 'ALL'] \
+            , help='compile either EOS library target, or all targets' \
+        )
+        parser.add_argument('-r', '--run' \
+            , metavar='GTEST_FILTER_PATTERN' \
+            , nargs='*' \
+            , help='filter unit tests' \
+        )
+        parser.add_argument('--coverage' \
+            , action='store_true' \
+            , help='run unit tests and create code coverage report' \
+        )
+        parser.add_argument('--install' \
+            , action='store_true' \
+            , help='install on OS' \
+        )
+        parser.add_argument('--config' \
+            , choices=['Release', 'Debug', 'RelWithDebInfo', 'MinSizeRel'] \
+            , default='Debug' \
+            , help='set project configuration' \
+        )
+        parser.add_argument('-j', '--jobs' \
+            , type=int \
+            , help='set number of parallel jobs to build' \
+        )
+        parser.add_argument('--verbose' \
+            , action='store_true' \
+            , help='verbose compiler output' \
+        )
+        parser.add_argument('-d', '--define' \
+            , metavar='DEFINITIONS' \
+            , nargs='*' \
+            , help='create or update a CMake cache entry in DEFINITIONS format <var>:<type>=<value>, or <var>=<value>' \
+        )
+        parser.add_argument('--version' \
+            , action='version' \
+            , version=f'%(prog)s {self.__PROGRAM_VERSION}' \
+        )
         self.__args = parser.parse_args()
 
 
     def __print_args(self):
-        if self.__get_args().project is not None:
-            Message.out(f'[INFO] Argument PROJECT: {self.__get_args().project}', Message.INF)
+        if self.__get_args().eoos is not None:
+            Message.out(f'[INFO] Argument EOOS: {self.__get_args().eoos}', Message.INF)
         if self.__get_args().clean is True:
             Message.out(f'[INFO] Argument CLEAN: {self.__get_args().clean}', Message.INF)
         if self.__get_args().build is not None:
@@ -148,7 +153,7 @@ class Make:
 
 
     __PROGRAM_NAME = 'EOOS Safe Project Builder'
-    __PROGRAM_VERSION = '1.2.0'
+    __PROGRAM_VERSION = '2.0.0'
 
 
 def main():
