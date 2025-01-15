@@ -49,7 +49,7 @@ class ProgramOnFreeRTOS(Program):
 
 
     def _get_run_executable(self):
-        return f'./EoosTests'
+        return f'./EoosTests.elf'
 
 
     def __do_build_on_linux(self):
