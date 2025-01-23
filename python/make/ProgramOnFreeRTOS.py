@@ -27,17 +27,17 @@ class ProgramOnFreeRTOS(Program):
 
     def _do_install(self):
         if self._get_args().install is True:
-            raise Exception(f'EOOS FreeRTOS program is not installable')
+            raise Exception(f'EOOS FreeRTOS program cannot be installed as the feature is in development')
 
 
     def _do_run(self):
         if self._get_args().run is not None:
-            raise Exception(f'EOOS FreeRTOS program is not runnable')
+            raise Exception(f'EOOS FreeRTOS program cannot be run as the feature is in development')
 
 
     def _do_coverage(self):
         if self._get_args().coverage is True:
-            raise Exception(f'EOOS FreeRTOS program is not coverable')
+            raise Exception(f'EOOS FreeRTOS program cannot be covered as the feature is in development')
 
 
     def _get_run_ut_executable_path_to(self):
