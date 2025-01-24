@@ -33,7 +33,6 @@ class Make:
             self.__parse_args()
             self.__print_args()
             program = None
-
             if self.__get_args().eoos == f'POSIX':
                 program = ProgramOnPosix( self.__get_args() )
             elif self.__get_args().eoos == f'WIN32':
@@ -42,16 +41,13 @@ class Make:
                 program = ProgramOnFreeRTOS( self.__get_args() )
             else:
                 raise Exception(f'EOOS project not supported')
-
             if program is not None:
                 program.execute()
             else:
                 raise Exception(f'Program is not set')
-
         except Exception as e:
-           Message.out(f'[EXCEPTION] {e}', Message.ERR)
-           res = False
-
+            Message.out(f'[EXCEPTION] {e}', Message.ERR)
+            res = False
         finally:
             status = Message.OK
             not_word = ''
@@ -68,7 +64,7 @@ class Make:
 
 
     def __parse_args(self):
-        parser = argparse.ArgumentParser(prog=self.__PROGRAM_NAME\
+        parser = argparse.ArgumentParser(prog=self.__PROGRAM_NAME \
             , description='Builds and installs the EOOS project to your host OS, or HW platform' \
             , epilog='(c) 2023-2025, Sergey Baigudin, Baigudin Software' \
         )
@@ -83,7 +79,8 @@ class Make:
         )
         parser.add_argument('-b', '--build' \
             , choices=['EOOS', 'ALL'] \
-            , help='compile either EOS library target, or all targets' \
+            , default='ALL' \
+            , help='compile either EOOS library target, or all targets' \
         )
         parser.add_argument('-r', '--run' \
             , metavar='GTEST_FILTER_PATTERN' \
